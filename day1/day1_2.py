@@ -3,13 +3,10 @@
 import sys
 
 def first_freq_reached_twice(filename):
-    change_file = open(filename, 'r')
+    changes = open(filename, 'r').readlines()
     frequency = 0
     freqs = set()
     freqs.add(frequency)
-
-    changes = change_file.readlines()
-
     frequency_repeated = False
 
     while not frequency_repeated:

@@ -3,9 +3,8 @@
 import sys
 
 def measure_freq_change(filename):
-    change_file = open(filename, 'r')
     total = 0
-    for change in change_file:
+    for change in open(filename, 'r'):
         total += int(change)
     return print(total)
 
