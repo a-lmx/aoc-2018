@@ -1,5 +1,7 @@
 # https://adventofcode.com/2018/day/1
 
+import sys
+
 def measure_freq_change(filename):
     change_file = open(filename, 'r')
     total = 0
@@ -7,4 +9,4 @@ def measure_freq_change(filename):
         total += int(change)
     return print(total)
 
-measure_freq_change("day1_1_input.txt")
+measure_freq_change(sys.argv[1])
