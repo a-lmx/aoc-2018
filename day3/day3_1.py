@@ -32,6 +32,21 @@ def count_clashing_claims(fabric):
 
     return clashing_claims
 
+def check_claim_overlap(fabric):
+    claims = set()
+    overlap = set()
+    for i in range(len(fabric)):
+        for j in range(len(fabric[0])):
+            inch = fabric[i][j]
+            for claim in inch:
+                claims.add(claim)
+            if len(inch) > 1:
+                for claim in inch:
+                    overlap.add(claim)
+    no_overlap = claims - overlap
+
+    print(f'The claim with no overlap is: {no_overlap}') 
+
 def process_claims(filename, fabric_size):
     claims = open(filename).readlines()
 
@@ -43,5 +58,6 @@ def process_claims(filename, fabric_size):
 
     num_clashing_claims = count_clashing_claims(fabric)
     print(f'Number of squares with clashing claims: {num_clashing_claims}')
+    check_claim_overlap(fabric)
 
 process_claims(sys.argv[1], int(sys.argv[2]))
