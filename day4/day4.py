@@ -40,6 +40,19 @@ def find_sleepiest_minute(minute_list):
             sleepiest_minute = i
     return sleepiest_minute
 
+def find_most_slept_minute(time_log):
+    most_slept_mins = 0
+    most_slept_minute = None
+    sleepingest_guard = None
+    for guard in time_log:
+        minute_list = time_log[guard]
+        for i in range(len(minute_list)):
+            if minute_list[i] > most_slept_mins:
+                most_slept_mins = minute_list[i]
+                most_slept_minute = i
+                sleepingest_guard = guard
+    return sleepingest_guard, most_slept_minute
+
 def process_records(filename):
     records = open(filename).read().splitlines()
     records.sort()
@@ -64,5 +77,9 @@ def process_records(filename):
     sleepiest_minute = find_sleepiest_minute(time_log[sleepiest_guard])
     print(f'The sleepiest guard is {sleepiest_guard}. They were most often asleep at minute {sleepiest_minute}.')
     print(f'The product of the sleepiest guard\'s id and their sleepiest minute is {int(sleepiest_guard) * sleepiest_minute}.')
+
+    sleepingest_guard, most_slept_minute = find_most_slept_minute(time_log)
+    print(f'The guard who is most frequently asleep at the same minute is {sleepingest_guard} and that minute is {most_slept_minute}.')
+    print(f'The product of the guard\'s id and the most slept minute is {int(sleepingest_guard) * most_slept_minute}.')
 
 process_records(sys.argv[1])
