@@ -15,7 +15,7 @@ class Location:
         return f'({self.x}, {self.y})'
 
 class Grid:
-    def __init__(self, min_x, max_x, min_y, max_y, coords):
+    def __init__(self, min_x, max_x, min_y, max_y, coords, safe_distance=None):
         self.min_x = min_x
         self.max_x = max_x
         self.min_y = min_y
@@ -23,14 +23,33 @@ class Grid:
         self.coords = coords
         self.border_coords = set()
         self.marked_grid = []
+        if safe_distance:
+            self.safe_distance = int(safe_distance)
+        else:
+            self.safe_distance = safe_distance
 
     def __repr__(self):
         return f'Grid:\nmin x: {self.min_x}, max_x: {self.max_x},\nmin_y: {self.min_y}, max_y: {self.max_y}'
 
+    def find_safe_locations(self):
+        num_safe_locations = 0
+        for x in range(self.max_x + 1):
+            for y in range(self.max_y + 1):
+                sum_to_all_coords = 0
+                loc = Location(x, y)
+                for coord in self.coords:
+                    sum_to_all_coords += coord.manhattan_distance(loc)
+                    if sum_to_all_coords > self.safe_distance:
+                        break
+                if sum_to_all_coords < self.safe_distance:
+                    num_safe_locations += 1
+        print(f'There are {num_safe_locations} safe locations.')
+        return num_safe_locations
+
     def find_closest_coord(self, location):
         closest_distance = float('inf')
         closest_coords = []
-        for coord in self.coords.keys():
+        for coord in self.coords:
             distance = coord.manhattan_distance(location)
             if distance == closest_distance:
                 closest_coords.append(coord)
@@ -86,36 +105,48 @@ class Grid:
         print(f'The largest finite area is {largest_area_label[0]} with size {largest_area_size}.')
 
 
-def create_grid(filename):
-    coordinates = open(filename).readlines()
-    max_x = 0
-    max_y = 0
-    min_x = float('inf')
-    min_y = float('inf')
-    coords = {}
-    label = 1
-    for coord in coordinates:
-        x, y = coord.split(', ')
-        x = int(x)
-        y = int(y)
-        if x > max_x:
-            max_x = x
-        if x < min_x:
-            min_x = x
-        if y > max_y:
-            max_y = y
-        if y < min_y:
-            min_y = y
-        coords[Location(x, y, label)] = []
-        label += 1
-    return Grid(min_x, max_x, min_y, max_y, coords)
+class GridManager:
+    def __init__(self, filename, safe_distance=None):
+        coordinates = open(filename).readlines()
+        max_x = 0
+        max_y = 0
+        min_x = float('inf')
+        min_y = float('inf')
+        coords = []
+        label = 1
+        for coord in coordinates:
+            x, y = coord.split(', ')
+            x = int(x)
+            y = int(y)
+            if x > max_x:
+                max_x = x
+            if x < min_x:
+                min_x = x
+            if y > max_y:
+                max_y = y
+            if y < min_y:
+                min_y = y
+            coords.append(Location(x, y, label))
+            label += 1
+        self.grid = Grid(min_x, max_x, min_y, max_y, coords, safe_distance)
 
-def main(filename):
-    grid = create_grid(filename)
-    grid.draw_areas()
-    grid.record_infinite_areas()
+    def minimize_danger(self):
+        self.grid.draw_areas()
+        self.grid.record_infinite_areas()
+        area_map = self.grid.count_areas()
+        self.grid.find_largest_finite_area(area_map)
 
-    area_map = grid.count_areas()
-    grid.find_largest_finite_area(area_map)
+    def maximize_safety(self):
+        self.grid.find_safe_locations()
 
-main(sys.argv[1])
+def main(filename, action, safe_distance=None):
+    grid_manager = GridManager(filename, safe_distance)
+    if action == 'danger':
+        grid_manager.minimize_danger()
+    if action == 'safety':
+        grid_manager.maximize_safety()
+
+if len(sys.argv) > 3:
+    main(sys.argv[1], sys.argv[2], sys.argv[3])
+else:
+    main(sys.argv[1], sys.argv[2])
