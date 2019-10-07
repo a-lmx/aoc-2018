@@ -21,7 +21,7 @@ class InstructionSet:
         self.step_order = []
     
     def __str__(self):
-        return f'Steps: {self.steps}'
+        return f'Available: {self.available}\nSteps: {self.steps}'
 
     def build_dep_tree(self, filename):
         lines = open(filename).readlines()
@@ -42,11 +42,31 @@ class InstructionSet:
                 new_dep.required_by.add(step)
                 self.steps[dep] = new_dep
 
+    def init_available(self):
+        for label, step in self.steps.items():
+            if len(step.deps) is 0:
+                self.available.add(label)
+
+    def find_order(self):
+        while len(self.available) is not 0:
+            sorted_available = sorted(self.available)
+            next_label = sorted_available[0]
+            self.available.remove(next_label)
+            self.step_order.append(next_label)
+            next_step = self.steps[next_label]
+            for step_label in next_step.required_by:
+                step = self.steps[step_label]
+                step.deps.remove(next_label)
+                if (len(step.deps) is 0) and (step_label not in self.step_order):
+                    self.available.add(step_label)
+            joined_order = ''.join(self.step_order)
+        print(f'Step order: {joined_order}')
 
 def main(filename):
     instructions = InstructionSet()
     instructions.build_dep_tree(filename)
-    print(instructions)
+    instructions.init_available()
+    instructions.find_order()
 
 
 main(sys.argv[1])
